@@ -25,7 +25,7 @@ splits = splitter.split_documents(docs)
 
 emb = MistralAIEmbeddings(
     model="mistral-embed",
-    api_key="JgkR1k8M86MlnwMOe89NZxmfgMaVinWo")
+    api_key="mistral-api-key")
 
 # emb = OpenAIEmbeddings(model="text-embedding-3-small")
 vs = FAISS.from_documents(splits, emb)

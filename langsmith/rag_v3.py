@@ -32,7 +32,7 @@ def split_documents(docs, chunk_size, chunk_overlap):
 def store_embeddings(splits):
     emb = MistralAIEmbeddings(
         model="mistral-embed",
-        api_key="JgkR1k8M86MlnwMOe89NZxmfgMaVinWo")
+        api_key="mistral-api-key")
     vs = FAISS.from_documents(splits, emb)
     return vs
 
