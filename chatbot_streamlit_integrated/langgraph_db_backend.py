@@ -32,8 +32,15 @@ graph.add_edge("chat_node", END)
 workflow = graph.compile(checkpointer=checkpointer)
 
 def retrieve_all_threads():
-    all_threads = set()
+    threads_dict = {}
+    # all_threads = set()
     for checkpoint in checkpointer.list(None):
-        all_threads.add(checkpoint.config['configurable']['thread_id'])
+        thread_id = checkpoint.config['configurable']['thread_id']
+        thread_name = checkpoint.config.get("metadata", {}).get("thread_name", "New Chat")
 
-    return list(all_threads)
+        threads_dict[thread_id] = {
+            "id": str(thread_id),
+            "name": thread_name
+        }
+
+    return list(threads_dict.values())
