@@ -21,6 +21,17 @@ def chat_node(state: ChatbotState) -> ChatbotState:
     return {"messages": [response]}
 
 conn = sqlite3.connect(database='chatbot.db', check_same_thread=False)
+
+try:
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS thread_names (
+            thread_id TEXT PRIMARY KEY,
+            name TEXT
+        )
+    """)
+    conn.commit()
+except sqlite3.OperationalError as e:
+    print(f"Error creating thread_names table: {e}")
 checkpointer = SqliteSaver(conn=conn)
 
 graph = StateGraph(ChatbotState)
