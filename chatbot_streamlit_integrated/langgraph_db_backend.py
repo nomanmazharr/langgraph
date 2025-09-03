@@ -26,7 +26,7 @@ try:
     conn.execute("""
         CREATE TABLE IF NOT EXISTS thread_names (
             thread_id TEXT PRIMARY KEY,
-            name TEXT
+            name TEXT NOT NULL
         )
     """)
     conn.commit()
@@ -43,19 +43,31 @@ graph.add_edge("chat_node", END)
 workflow = graph.compile(checkpointer=checkpointer)
 
 def save_thread_name(thread_id: str, name: str):
-    conn.execute("INSERT OR REPLACE INTO thread_names (thread_id, name) VALUES (?, ?)", (thread_id, name))
-    conn.commit()
+    try:
+        conn.execute("INSERT OR REPLACE INTO thread_names (thread_id, name) VALUES (?, ?)", (thread_id, name))
+        conn.commit()
+    except sqlite3.OperationalError as e:
+        print(f"Error saving the thread name: {e}")
 
 def retrieve_all_threads():
     threads_dict = {}
     # all_threads = set()
-    for checkpoint in checkpointer.list(None):
-        thread_id = checkpoint.config['configurable']['thread_id']
-        thread_name = checkpoint.config.get("metadata", {}).get("thread_name", "New Chat")
+    try:
+        cursor = conn.cursor()
 
-        threads_dict[thread_id] = {
-            "id": str(thread_id),
-            "name": thread_name
-        }
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='checkpoints'")
+        if cursor.fetchone():
+            cursor.execute("SELECT DISTINCT thread_id FROM checkpoints")
+            for row in cursor.fetchall():
+                thread_id = row[0]
 
-    return list(threads_dict.values())
+                name_row = cursor.execute("SELECT name FROM thread_names where thread_id=?", (thread_id,)).fetchone()
+                thread_name = name_row[0] if name_row else "New Chat"
+                threads_dict[thread_id] = {
+                    "id": str(thread_id),
+                    "name": thread_name
+                }
+        return list(threads_dict.values())
+    except sqlite3.OperationalError as e:
+        print(f"Error retrieving threads: {e}")
+        return []
