@@ -31,6 +31,10 @@ graph.add_edge("chat_node", END)
 
 workflow = graph.compile(checkpointer=checkpointer)
 
+def save_thread_name(thread_id: str, name: str):
+    conn.execute("INSERT OR REPLACE INTO thread_names (thread_id, name) VALUES (?, ?)", (thread_id, name))
+    conn.commit()
+
 def retrieve_all_threads():
     threads_dict = {}
     # all_threads = set()
