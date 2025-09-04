@@ -11,13 +11,14 @@ def add_thread(thread_id, name="New Chat"):
         st.session_state['chat_threads'].append({"id": thread_id, "name": name})
 
 
-def generate_thread_title(user_input, workflow, thread_id="title-gen"):
+def generate_thread_title(user_input, workflow):
     # Use the workflow instead of calling model directly
     prompt = f"""
     Summarize the following message into a short, clear title, understand semantic meaning if it's a greeting say it's greeting like that. (max 3 words).
     Message: "{user_input}"
     """
     config = {"configurable": {"thread_id": thread_id}}
+    config = {"configurable": {"thread_id": f"title-gen-{uuid.uuid4()}"}}
     response = workflow.invoke({"messages": [HumanMessage(content=prompt)]}, config=config)
     return response["messages"][-1].content
 
